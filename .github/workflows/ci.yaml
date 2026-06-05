@@ -5,7 +5,7 @@ permissions:
   contents: read
 
 on:
-   workflow_dispatch:
+  workflow_dispatch:
 
 env:
   AWS_REGION: ap-south-1
@@ -13,11 +13,9 @@ env:
 
 jobs:
   build-and-push:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Source
         uses: actions/checkout@v4
 
@@ -39,7 +37,6 @@ jobs:
           aws-region: ap-south-1
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker Image
@@ -53,5 +50,12 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          docker push \
-          293033346072.dkr.ecr.ap-south-1.amazonaws.com/$ECR_REPOSITORY:${{ github.run_number }}
+          docker push 293033346072.dkr.ecr.ap-south-1.amazonaws.com/$ECR_REPOSITORY:${{ github.run_number }}
+
+      - name: Update ECS Service (Force New Deployment)
+        run: |
+          aws ecs update-service \
+            --cluster react-portfolio-cluster \
+            --service react-portfolio-task-service-mo91o9se \
+            --force-new-deployment \
+            --region ap-south-1
